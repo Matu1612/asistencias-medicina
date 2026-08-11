@@ -1,172 +1,183 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistencias Medicina</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f7fb;
-            color: #1f2937;
-            min-height: 100vh;
-        }
-
-        header {
-            background: linear-gradient(135deg, #2563eb, #0ea5e9);
-            color: white;
-            padding: 35px 20px;
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 32px;
-            margin-bottom: 8px;
-        }
-
-        header p {
-            opacity: 0.9;
-        }
-
-        main {
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .top-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            gap: 15px;
-        }
-
-        .top-section h2 {
-            font-size: 25px;
-        }
-
-        button {
-            border: none;
-            cursor: pointer;
-            border-radius: 10px;
-            padding: 12px 18px;
-            font-size: 15px;
-            font-weight: bold;
-        }
-
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-
-        .empty {
-            background: white;
-            border-radius: 16px;
-            padding: 50px 25px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-        }
-
-        .empty .icon {
-            font-size: 55px;
-            margin-bottom: 15px;
-        }
-
-        .empty h3 {
-            font-size: 22px;
-            margin-bottom: 10px;
-        }
-
-        .empty p {
-            color: #6b7280;
-            margin-bottom: 20px;
-        }
-
-        .info {
-            margin-top: 25px;
-            background: #e0f2fe;
-            border-left: 5px solid #0284c7;
-            padding: 18px;
-            border-radius: 10px;
-            color: #075985;
-        }
-
-        @media (max-width: 600px) {
-            header h1 {
-                font-size: 26px;
-            }
-
-            .top-section {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .top-section button {
-                width: 100%;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asistencias Medicina</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#fff5fa;color:#4a3040}
+header{background:linear-gradient(135deg,#f9a8d4,#f472b6);color:#fff;padding:26px 18px}header h1{margin:0 0 5px}
+main{max-width:1100px;margin:24px auto;padding:0 16px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}.card,.box,.calendar{background:#fff;border-radius:16px;padding:18px;box-shadow:0 4px 15px #0000000d}
+button{border:0;border-radius:9px;padding:10px 14px;font-weight:bold;cursor:pointer}.primary{background:#f472b6;color:#fff}.secondary{background:#fce7f3;color:#9d174d}.danger{background:#ffe4e6;color:#be123c}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.muted{color:#6b7280}.stat{font-size:28px;font-weight:800;margin:8px 0}.good{color:#be185d}.bad{color:#be123c}.warn{color:#c2410c}
+input,select{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;font-size:15px}label{display:block;font-weight:bold;margin:12px 0 5px}
+.modal{display:none;position:fixed;inset:0;background:#0007;align-items:center;justify-content:center;padding:16px;z-index:5}.modal.show{display:flex}.box{max-width:650px;width:100%;max-height:90vh;overflow:auto}
+.notice{background:#fdf2f8;border-left:4px solid #f472b6;padding:11px;border-radius:7px;margin:12px 0}.item{border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:9px 0}.pending{color:#b45309;font-weight:bold}
+.calendarHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.calgrid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #e5e7eb;border-left:1px solid #e5e7eb}.dow,.day{border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb}.dow{text-align:center;font-weight:bold;background:#fdf2f8;padding:8px}.day{min-height:105px;padding:6px;cursor:pointer}.day:hover{background:#f8fafc}.today{outline:2px solid #f472b6;outline-offset:-2px}.event{font-size:11px;border-radius:6px;padding:4px;margin-top:3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.exam{background:#fbcfe8}.activity{background:#fce7f3}.practice{background:#f5d0fe}.other{background:#fef3c7}
+@media(max-width:600px){.top{flex-direction:column;align-items:stretch}.day{min-height:75px;font-size:12px}.event{font-size:9px}}
+</style>
 </head>
-
 <body>
+<header><h1>🎀 🩺 Asistencias Medicina</h1><div>Asistencias · Evaluaciones · Calendario ✨</div></header>
+<main>
+<div class="top"><h2>🌸 Mi panel</h2><div class="actions"><button class="primary" onclick="page('subjects')">📚 Materias</button><button class="secondary" onclick="page('calendar')">📅 Calendario</button></div></div>
+<section id="subjectsPage">
+<div class="top"><h2>🎀 Mis materias</h2><button class="primary" onclick="newSubject()">＋ Agregar materia</button></div><div id="subjects"></div>
+</section>
+<section id="calendarPage" style="display:none">
+<div class="top"><h2>🌷 Calendario</h2><div class="actions"><button class="secondary" onclick="moveMonth(-1)">‹</button><button class="secondary" onclick="today()">Hoy</button><button class="secondary" onclick="moveMonth(1)">›</button><button class="primary" onclick="newEvent()">＋ Evento</button></div></div>
+<div id="calendar"></div>
+</section>
+</main>
 
-    <header>
-        <h1>🩺 Asistencias Medicina</h1>
-        <p>Control de asistencias, notas y evaluaciones</p>
-    </header>
+<div class="modal" id="subjectModal"><div class="box"><h2>＋ Agregar materia</h2>
+<label>Nombre</label><input id="sname" placeholder="Ej. Anatomía">
+<label>Mínimo de asistencia (%)</label><input id="smin" type="number" value="80" min="0" max="100">
+<div class="actions"><button class="secondary" onclick="closeAll()">Cancelar</button><button class="primary" onclick="saveSubject()">Guardar</button></div></div></div>
 
-    <main>
+<div class="modal" id="attendanceModal"><div class="box"><h2>📅 Registrar asistencia</h2><div id="attSubject"></div>
+<label>Fecha</label><input id="attDate" type="date"><label>Tipo</label>
+<select id="attType"><option value="present">✅ Asistencia</option><option value="half">🌓 Media asistencia</option><option value="absent">❌ Ausencia</option><option value="justified">🟡 Ausencia justificada</option></select>
+<div class="notice">Si una fecha ya tiene una asistencia y volvés a registrar <b>Asistencia</b> en esa misma fecha, se convierte automáticamente en ⭐ <b>doble asistencia</b>.</div>
+<div class="actions"><button class="secondary" onclick="closeAll()">Cancelar</button><button class="primary" onclick="saveAttendance()">Guardar</button></div></div></div>
 
-        <div class="top-section">
-            <h2>📚 Mis materias</h2>
+<div class="modal" id="detailModal"><div class="box"><h2 id="detailTitle"></h2><div class="actions"><button id="attTab" class="primary" onclick="detailTab('att')">📅 Asistencia</button><button id="gradeTab" class="secondary" onclick="detailTab('grades')">📝 Evaluaciones</button></div><div id="detail"></div><div class="actions"><button class="secondary" onclick="closeAll()">Cerrar</button></div></div></div>
 
-            <button class="btn-primary">
-                ＋ Agregar materia
-            </button>
-        </div>
+<div class="modal" id="gradeModal"><div class="box"><h2>📝 Evaluación</h2>
+<label>Nombre</label><input id="gname" placeholder="Ej. Parcial 1">
+<label>Fecha (opcional)</label><input id="gdate" type="date">
+<div class="actions"><button class="secondary" onclick="closeGrade()">Cancelar</button><button class="primary" onclick="saveGrade()">Guardar</button></div>
+<div class="notice">El <b>peso no es obligatorio</b>. Podés agregar el examen ahora y poner su peso después, cuando lo sepan.</div>
+<label>Puntaje máximo (opcional)</label><input id="gmax" type="number" min="0" step=".01" placeholder="Ej. 30">
+<label>Puntaje obtenido (opcional)</label><input id="gscore" type="number" min="0" step=".01" placeholder="Todavía no rindió">
+<label>Peso de la nota final (%) — opcional</label><input id="gweight" type="number" min="0" max="100" step=".01" placeholder="Todavía no lo saben">
+</div></div>
 
-        <div class="empty">
+<div class="modal" id="eventModal"><div class="box"><h2>📅 Evento del calendario</h2>
+<label>Materia</label><select id="ematter"></select><label>Nombre</label><input id="ename" placeholder="Ej. Parcial de Anatomía">
+<div class="actions"><button class="secondary" onclick="closeAll()">Cancelar</button><button class="primary" onclick="saveEvent()">Guardar</button></div>
+<label>Fecha</label><input id="edate" type="date"><label>Tipo</label><select id="etype"><option value="exam">🧪 Examen</option><option value="activity">📝 Actividad</option><option value="practice">🏥 Práctica</option><option value="other">📌 Otro</option></select>
+<div class="notice">Si elegís <b>Examen</b>, podés marcarlo también como evaluación. Su peso puede quedar pendiente.</div>
+<label><input id="alsoGrade" type="checkbox" style="width:auto"> Crear también una evaluación</label>
+</div></div>
 
-            <div class="icon">📚</div>
+<script>
+const KEY="medicina_final_v1";
+let data=JSON.parse(localStorage.getItem(KEY)||'{"subjects":[]}');
+data.subjects.forEach(s=>{s.attendance=s.attendance||[];s.evaluations=s.evaluations||[];s.events=s.events||[]});
+let current=null, editIndex=null, cal=new Date();
+const E = id => document.getElementById(id);
+const subjectsPageEl=E("subjectsPage"), calendarPageEl=E("calendarPage"), subjectsEl=E("subjects"), calendarEl=E("calendar");
+const subjectModalEl=E("subjectModal"), attendanceModalEl=E("attendanceModal"), detailModalEl=E("detailModal"), gradeModalEl=E("gradeModal"), eventModalEl=E("eventModal");
+const snameEl=E("sname"), sminEl=E("smin"), attSubjectEl=E("attSubject"), attDateEl=E("attDate"), attTypeEl=E("attType");
+const detailTitleEl=E("detailTitle"), detailEl=E("detail"), attTabEl=E("attTab"), gradeTabEl=E("gradeTab");
+const gnameEl=E("gname"), gdateEl=E("gdate"), gmaxEl=E("gmax"), gscoreEl=E("gscore"), gweightEl=E("gweight");
+const ematterEl=E("ematter"), enameEl=E("ename"), edateEl=E("edate"), etypeEl=E("etype"), alsoGradeEl=E("alsoGrade");
 
-            <h3>Todavía no hay materias</h3>
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function esc(x){return String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function fmt(x){let [y,m,d]=x.split("-");return d+"/"+m+"/"+y}
+function closeAll(){document.querySelectorAll(".modal").forEach(x=>x.classList.remove("show"));attTabEl.style.display="";gradeTabEl.style.display=""}
+function closeGrade(){gradeModalEl.classList.remove("show")}
 
-            <p>
-                Agregá tu primera materia para comenzar
-                a registrar asistencias y notas.
-            </p>
+function page(x){subjectsPageEl.style.display=x==="subjects"?"block":"none";calendarPageEl.style.display=x==="calendar"?"block":"none";if(x==="calendar")drawCalendar()}
 
-            <button class="btn-primary">
-                ＋ Agregar mi primera materia
-            </button>
+function newSubject(){snameEl.value="";sminEl.value=80;subjectModalEl.classList.add("show");subjectModalEl.style.zIndex="20"}
+function saveSubject(){let n=snameEl.value.trim(),m=Number(sminEl.value);if(!n)return alert("Escribí el nombre.");if(m<0||m>100)return alert("El mínimo debe estar entre 0 y 100.");data.subjects.push({id:uid(),name:n,minAttendance:m,attendance:[],evaluations:[],events:[]});save();closeAll();drawSubjects()}
+function deleteSubject(id){
+ const s=data.subjects.find(x=>x.id===id);
+ if(!s)return;
 
-        </div>
+ const attendanceCount=(s.attendance||[]).length;
+ const evaluationCount=(s.evaluations||[]).length;
+ const eventCount=(s.events||[]).length;
 
-        <div class="info">
-            <strong>💡 ¿Qué podremos hacer?</strong>
-            <br><br>
+ const message =
+ `⚠️ ADVERTENCIA\n\n`+
+ `Vas a eliminar la materia "${s.name}".\n\n`+
+ `También se eliminarán PERMANENTEMENTE:\n`+
+ `• ${attendanceCount} registro(s) de asistencia\n`+
+ `• ${evaluationCount} evaluación(es)\n`+
+ `• ${eventCount} evento(s) del calendario\n\n`+
+ `Esta acción NO se puede deshacer.\n\n`+
+ `¿Seguro que querés eliminarla?`;
 
-            📅 Registrar exactamente qué día asistió o faltó.<br>
-            📊 Calcular automáticamente la asistencia.<br>
-            📝 Registrar exámenes y trabajos.<br>
-            🎯 Configurar cuánto vale cada evaluación.<br>
-            🔢 Usar distintos puntajes máximos.<br>
-            ⭐ Calcular la nota actual y la posible nota final.
-        </div>
+ if(!window.confirm(message)) return;
 
-    </main>
+ data.subjects=data.subjects.filter(x=>x.id!==id);
 
-</body>
-</html>
+ if(current===id){
+   current=null;
+   closeAll();
+ }
+
+ save();
+ drawSubjects();
+ drawCalendar();
+}
+function astats(s){let units=0;for(let a of s.attendance){if(a.type==="present")units++;if(a.type==="double")units+=2;if(a.type==="half")units+=.5}let total=s.attendance.length;return{total,units,pct:total?Math.min(100,units/total*100):0}}
+function newAttendance(id){current=id;let s=data.subjects.find(x=>x.id===id);if(!s)return alert("No se encontró la materia.");attSubjectEl.innerHTML="<b>"+esc(s.name)+"</b>";attDateEl.value=iso(new Date());attTypeEl.value="present";attendanceModalEl.classList.add("show");attendanceModalEl.style.zIndex="20"}
+function saveAttendance(){let d=attDateEl.value,t=attTypeEl.value;if(!current)return alert("Primero elegí una materia.");if(!d)return alert("Elegí una fecha.");let s=data.subjects.find(x=>x.id===current),e=s.attendance.find(x=>x.date===d);if(e&&e.type==="present"&&t==="present")e.type="double";else if(e)return alert("Esa fecha ya tiene un registro.");else s.attendance.push({date:d,type:t});save();closeAll();drawSubjects()}
+
+function openDetails(id,tab="att"){current=id;detailTitleEl.textContent=data.subjects.find(x=>x.id===id).name;detailModalEl.classList.add("show");detailTab(tab)}
+function detailTab(tab){let s=data.subjects.find(x=>x.id===current);attTabEl.className=tab==="att"?"primary":"secondary";gradeTabEl.className=tab==="grades"?"primary":"secondary";detailEl.innerHTML=tab==="att"?attendanceView(s):gradeView(s)}
+function attendanceView(s){
+ let a=astats(s);
+ let h=`<div class="stat ${a.pct>=s.minAttendance?"good":"bad"}">${a.pct.toFixed(1)}%</div>
+ <p>Mínimo: <b>${s.minAttendance}%</b></p>
+ <div class="notice">Días registrados: <b>${a.total}</b> · Asistencias efectivas: <b>${a.units}</b></div>
+ <button class="primary" onclick="newAttendance('${s.id}')">＋ Registrar día</button>
+ <h3>Historial</h3>`;
+ if(!s.attendance.length) h+=`<p class="muted">Todavía no hay registros.</p>`;
+ s.attendance.slice().sort((x,y)=>y.date.localeCompare(x.date)).forEach((x,i)=>{
+   h+=`<div class="item">
+     <b>${fmt(x.date)}</b><br>
+     ${x.type==="double"?"⭐ Doble asistencia":x.type==="present"?"✅ Asistencia":x.type==="half"?"🌓 Media asistencia":x.type==="absent"?"❌ Ausencia":"🟡 Ausencia justificada"}
+     <div class="actions">
+       <button class="danger" onclick="deleteAttendance('${s.id}','${x.date}')">🗑️ Eliminar</button>
+     </div>
+   </div>`;
+ });
+ return h;
+}
+function deleteAttendance(subjectId,date){
+ const s=data.subjects.find(x=>x.id===subjectId);
+ if(!s)return;
+ const registro=s.attendance.find(x=>x.date===date);
+ if(!registro)return;
+ if(!confirm("¿Eliminar el registro de asistencia del "+fmt(date)+"?"))return;
+ s.attendance=s.attendance.filter(x=>x.date!==date);
+ save();
+ detailTab("att");
+ drawSubjects();
+}
+function gradeInfo(s){let weight=0,earned=0;for(let g of s.evaluations){if(g.weight!=null)weight+=Number(g.weight);if(g.weight!=null&&g.score!=null&&g.max>0)earned+=Number(g.score)/Number(g.max)*Number(g.weight)}return{weight,earned,pending:Math.max(0,100-weight)}}
+function gradeView(s){let z=gradeInfo(s),h=`<div class="notice"><b>Peso conocido:</b> ${z.weight.toFixed(1)}%<br><b>Peso pendiente:</b> ${z.pending.toFixed(1)}%<br><b>Nota acumulada aportada:</b> ${z.earned.toFixed(1)}/100</div><button class="primary" onclick="newGrade()">＋ Agregar evaluación</button>`;if(!s.evaluations.length)h+="<p class='muted'>Todavía no hay evaluaciones.</p>";s.evaluations.forEach((g,i)=>{let pct=g.score!=null?g.score/g.max*100:null;h+=`<div class="item"><b>${esc(g.name)}</b>${g.date?"<br>📅 "+fmt(g.date):""}<br>${g.score==null?"🕐 Nota pendiente":g.score+" / "+g.max+" ("+pct.toFixed(1)+"%)"}<br>⚖️ Peso: <span class="${g.weight==null?"pending":""}">${g.weight==null?"Pendiente":g.weight+"%"}</span><div class="actions"><button class="secondary" onclick="editGrade(${i})">Editar</button><button class="danger" onclick="delGrade(${i})">Eliminar</button></div></div>`});h+="<h3>🎯 Escala</h3><p>5 = 91–100 · 4 = 81–90 · 3 = 71–80 · 2 = 61–70 · 1 = 1–60</p>";return h}
+function newGrade(){editIndex=null;gnameEl.value="";gdateEl.value="";gmaxEl.value="";gscoreEl.value="";gweightEl.value="";gradeModalEl.classList.add("show");gradeModalEl.style.zIndex="20"}
+function editGrade(i){let g=data.subjects.find(x=>x.id===current).evaluations[i];editIndex=i;gnameEl.value=g.name;gdateEl.value=g.date||"";gmaxEl.value=g.max??"";gscoreEl.value=g.score??"";gweightEl.value=g.weight??"";gradeModalEl.classList.add("show");gradeModalEl.style.zIndex="20"}
+function saveGrade(){let s=data.subjects.find(x=>x.id===current),n=gnameEl.value.trim(),max=gmaxEl.value===""?100:Number(gmaxEl.value),score=gscoreEl.value===""?null:Number(gscoreEl.value),w=gweightEl.value===""?null:Number(gweightEl.value);if(!n)return alert("Escribí el nombre.");if(max<=0)return alert("El puntaje máximo debe ser mayor que 0.");if(score!=null&&(score<0||score>max))return alert("El puntaje no puede superar el máximo.");if(w!=null&&(w<0||w>100))return alert("El peso debe estar entre 0 y 100.");let g={id:uid(),name:n,date:gdateEl.value||null,max,score,weight:w};if(editIndex==null)s.evaluations.push(g);else{s.evaluations[editIndex].name=n;s.evaluations[editIndex].date=g.date;s.evaluations[editIndex].max=max;s.evaluations[editIndex].score=score;s.evaluations[editIndex].weight=w}save();closeGrade();detailTab("grades")}
+function delGrade(i){let s=data.subjects.find(x=>x.id===current);if(confirm("¿Eliminar evaluación?")){s.evaluations.splice(i,1);save();detailTab("grades")}}
+
+function newEvent(){if(!data.subjects.length)return alert("Primero agregá una materia.");ematterEl.innerHTML=data.subjects.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");enameEl.value="";edateEl.value=iso(cal);etypeEl.value="exam";alsoGradeEl.checked=true;eventModalEl.classList.add("show");eventModalEl.style.zIndex="20"}
+function saveEvent(){let sid=ematter.value,n=enameEl.value.trim(),d=edateEl.value,t=etypeEl.value;if(!n||!d)return alert("Completá nombre y fecha.");let s=data.subjects.find(x=>x.id===sid),e={id:uid(),name:n,date:d,type:t};s.events.push(e);if(alsoGradeEl.checked&&t==="exam")s.evaluations.push({id:e.id,name:n,date:d,max:100,score:null,weight:null});save();closeAll();drawCalendar();drawSubjects()}
+function moveMonth(n){cal=new Date(cal.getFullYear(),cal.getMonth()+n,1);drawCalendar()}function today(){cal=new Date();drawCalendar()}
+function drawCalendar(){let y=cal.getFullYear(),m=cal.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0),start=(first.getDay()+6)%7,total=Math.ceil((start+last.getDate())/7)*7,names=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];let h=`<div class="calendar"><div class="calendarHead"><h3>${cal.toLocaleDateString("es-ES",{month:"long",year:"numeric"})}</h3></div><div class="calgrid">${names.map(x=>`<div class="dow">${x}</div>`).join("")}`;for(let i=0;i<total;i++){let day=i-start+1;if(day<1||day>last.getDate()){h+="<div class='day' style='background:#f8fafc'></div>";continue}let d=new Date(y,m,day),id=iso(d),ev=[];data.subjects.forEach(s=>(s.events||[]).forEach(e=>{if(e.date===id)ev.push({...e,subject:s.name})}));h+=`<div class="day ${id===iso(new Date())?"today":""}" onclick="calendarDay('${id}')"><b>${day}</b>${ev.map(e=>`<div class="event ${e.type}" title="${esc(e.name)}">${e.type==="exam"?"🧪":e.type==="activity"?"📝":e.type==="practice"?"🏥":"📌"} ${esc(e.name)}</div>`).join("")}</div>`}calendarEl.innerHTML=h+"</div></div>"}
+function calendarDay(d){let ev=[];data.subjects.forEach(s=>(s.events||[]).forEach(e=>{if(e.date===d)ev.push({...e,subject:s.name,subjectId:s.id})}));if(!ev.length){newEvent();edateEl.value=d;return}detailTitleEl.textContent="📅 "+fmt(d);attTabEl.style.display="none";gradeTabEl.style.display="none";let h="";ev.forEach(e=>h+=`<div class="item"><b>${e.type==="exam"?"🧪 Examen":e.type==="activity"?"📝 Actividad":e.type==="practice"?"🏥 Práctica":"📌 Otro"} — ${esc(e.name)}</b><br>${esc(e.subject)}<div class="actions"><button class="danger" onclick="removeEvent('${e.subjectId||""}','${e.id}')">Eliminar</button></div></div>`);detailEl.innerHTML=h;detailModalEl.classList.add("show")}
+function removeEvent(sid,id){
+ const s=data.subjects.find(x=>x.id===sid);
+ if(!s)return;
+ if(!confirm("¿Eliminar este evento del calendario?"))return;
+ s.events=s.events.filter(e=>e.id!==id);
+ s.evaluations=s.evaluations.filter(g=>g.id!==id);
+ save();
+ closeAll();
+ drawCalendar();
+ drawSubjects();
+}
+function drawSubjects(){if(!data.subjects.length){subjectsEl.innerHTML=`<div class="card"><h3>Todavía no hay materias</h3><button class="primary" onclick="newSubject()">＋ Agregar materia</button></div>`;return}subjectsEl.innerHTML='<div class="grid">'+data.subjects.map(s=>{let a=astats(s),z=gradeInfo(s);return `<div class="card"><h3>${esc(s.name)}</h3><div class="muted">Mínimo: ${s.minAttendance}%</div><div class="stat ${a.pct>=s.minAttendance?"good":"bad"}">${a.total?a.pct.toFixed(1)+"%":"—"}</div><div>📝 ${s.evaluations.length} evaluación(es) · ⚖️ ${z.weight.toFixed(1)}% de peso conocido</div><div class="actions"><button class="primary" onclick="openDetails('${s.id}','att')">📅 Asistencia</button><button class="secondary" onclick="openDetails('${s.id}','grades')">📝 Evaluaciones</button><button class="danger" onclick="deleteSubject('${s.id}')">🗑️ Eliminar materia</button></div></div>`}).join("")}
+drawSubjects();drawCalendar();
+</script>
+</body></html>
