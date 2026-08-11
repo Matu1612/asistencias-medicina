@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistencias Medicina</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2563eb, #0ea5e9);
+            color: white;
+            padding: 35px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+
+        .top-section h2 {
+            font-size: 25px;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .empty {
+            background: white;
+            border-radius: 16px;
+            padding: 50px 25px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+
+        .empty .icon {
+            font-size: 55px;
+            margin-bottom: 15px;
+        }
+
+        .empty h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .empty p {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .info {
+            margin-top: 25px;
+            background: #e0f2fe;
+            border-left: 5px solid #0284c7;
+            padding: 18px;
+            border-radius: 10px;
+            color: #075985;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 26px;
+            }
+
+            .top-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .top-section button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🩺 Asistencias Medicina</h1>
+        <p>Control de asistencias, notas y evaluaciones</p>
+    </header>
+
+    <main>
+
+        <div class="top-section">
+            <h2>📚 Mis materias</h2>
+
+            <button class="btn-primary">
+                ＋ Agregar materia
+            </button>
+        </div>
+
+        <div class="empty">
+
+            <div class="icon">📚</div>
+
+            <h3>Todavía no hay materias</h3>
+
+            <p>
+                Agregá tu primera materia para comenzar
+                a registrar asistencias y notas.
+            </p>
+
+            <button class="btn-primary">
+                ＋ Agregar mi primera materia
+            </button>
+
+        </div>
+
+        <div class="info">
+            <strong>💡 ¿Qué podremos hacer?</strong>
+            <br><br>
+
+            📅 Registrar exactamente qué día asistió o faltó.<br>
+            📊 Calcular automáticamente la asistencia.<br>
+            📝 Registrar exámenes y trabajos.<br>
+            🎯 Configurar cuánto vale cada evaluación.<br>
+            🔢 Usar distintos puntajes máximos.<br>
+            ⭐ Calcular la nota actual y la posible nota final.
+        </div>
+
+    </main>
+
+</body>
+</html>
