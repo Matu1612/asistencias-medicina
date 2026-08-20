@@ -15,11 +15,48 @@ input,select{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;
 .modal{display:none;position:fixed;inset:0;background:#0007;align-items:center;justify-content:center;padding:16px;z-index:5}.modal.show{display:flex}.box{max-width:650px;width:100%;max-height:90vh;overflow:auto}
 .notice{background:#fdf2f8;border-left:4px solid #f472b6;padding:11px;border-radius:7px;margin:12px 0}.item{border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:9px 0}.pending{color:#b45309;font-weight:bold}
 .calendarHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.calgrid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #e5e7eb;border-left:1px solid #e5e7eb}.dow,.day{border-right:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb}.dow{text-align:center;font-weight:bold;background:#fdf2f8;padding:8px}.day{min-height:105px;padding:6px;cursor:pointer}.day:hover{background:#f8fafc}.today{outline:2px solid #f472b6;outline-offset:-2px}.event{font-size:11px;border-radius:6px;padding:4px;margin-top:3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.exam{background:#fbcfe8}.activity{background:#fce7f3}.practice{background:#f5d0fe}.other{background:#fef3c7}
+
+.auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#fff5fa,#fdf2f8)}
+.auth-card{width:min(430px,100%);background:#fff;border-radius:22px;padding:28px;box-shadow:0 16px 45px #9d174d18}
+.auth-card h1{margin:0 0 6px;color:#9d174d}.auth-card p{margin:0 0 18px}.auth-message{min-height:22px;margin-top:12px;font-size:14px}
+.app-shell{display:none}.userbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;font-size:14px}
+.userbar .email{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sync{font-size:12px;opacity:.9;margin-top:4px}
+
 @media(max-width:600px){.top{flex-direction:column;align-items:stretch}.day{min-height:75px;font-size:12px}.event{font-size:9px}}
 </style>
 </head>
 <body>
-<header><h1>🎀 🩺 Asistencias Medicina</h1><div>Asistencias · Evaluaciones · Calendario ✨</div></header>
+<div id="authScreen" class="auth-screen">
+  <form class="auth-card" id="authForm" onsubmit="login(event)">
+    <h1>🎀 🩺 Asistencias Medicina</h1>
+    <p class="muted">Ingresá con tu correo y contraseña.</p>
+
+    <label>Correo</label>
+    <input id="loginEmail" type="email" autocomplete="email" placeholder="correo@gmail.com" required>
+
+    <label>Contraseña</label>
+    <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" required>
+
+    <div class="actions">
+      <button id="loginButton" class="primary" type="submit" style="width:100%">Iniciar sesión</button>
+    </div>
+    <div id="authMessage" class="auth-message muted"></div>
+  </form>
+</div>
+
+<div id="appShell" class="app-shell">
+<header>
+<h1>🎀 🩺 Asistencias Medicina</h1>
+<div>Asistencias · Evaluaciones · Calendario ✨</div>
+<div class="userbar">
+  <div>
+    <div class="email" id="userEmail"></div>
+    <div class="sync" id="syncStatus">☁️ Conectando...</div>
+  </div>
+  <button class="secondary" onclick="logout()">Cerrar sesión</button>
+</div>
+</header>
 <main>
 <div class="top"><h2>🌸 Mi panel</h2><div class="actions"><button class="primary" onclick="page('subjects')">📚 Materias</button><button class="secondary" onclick="page('calendar')">📅 Calendario</button></div></div>
 <section id="subjectsPage">
@@ -62,10 +99,17 @@ input,select{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;
 <label><input id="alsoGrade" type="checkbox" style="width:auto"> Crear también una evaluación</label>
 </div></div>
 
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPABASE_URL="https://arzgevcybuxsjjksveai.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_B9p9O34ZLUjlym5S82ivKA_GeFwUHdc";
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+
 const KEY="medicina_final_v1";
-let data=JSON.parse(localStorage.getItem(KEY)||'{"subjects":[]}');
-data.subjects.forEach(s=>{s.attendance=s.attendance||[];s.evaluations=s.evaluations||[];s.events=s.events||[]});
+let data={"subjects":[]};
+let currentUser=null;
+let saveQueue=Promise.resolve();
 let current=null, editIndex=null, cal=new Date();
 const E = id => document.getElementById(id);
 const subjectsPageEl=E("subjectsPage"), calendarPageEl=E("calendarPage"), subjectsEl=E("subjects"), calendarEl=E("calendar");
@@ -74,8 +118,150 @@ const snameEl=E("sname"), sminEl=E("smin"), attSubjectEl=E("attSubject"), attDat
 const detailTitleEl=E("detailTitle"), detailEl=E("detail"), attTabEl=E("attTab"), gradeTabEl=E("gradeTab");
 const gnameEl=E("gname"), gdateEl=E("gdate"), gmaxEl=E("gmax"), gscoreEl=E("gscore"), gweightEl=E("gweight");
 const ematterEl=E("ematter"), enameEl=E("ename"), edateEl=E("edate"), etypeEl=E("etype"), alsoGradeEl=E("alsoGrade");
+const authScreenEl=E("authScreen"), appShellEl=E("appShell"), authFormEl=E("authForm");
+const loginEmailEl=E("loginEmail"), loginPasswordEl=E("loginPassword"), loginButtonEl=E("loginButton"), authMessageEl=E("authMessage");
+const userEmailEl=E("userEmail"), syncStatusEl=E("syncStatus");
 
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function normalizeData(raw){
+  const normalized=(raw&&typeof raw==="object")?raw:{"subjects":[]};
+  normalized.subjects=Array.isArray(normalized.subjects)?normalized.subjects:[];
+  normalized.subjects.forEach(s=>{
+    s.attendance=Array.isArray(s.attendance)?s.attendance:[];
+    s.evaluations=Array.isArray(s.evaluations)?s.evaluations:[];
+    s.events=Array.isArray(s.events)?s.events:[];
+  });
+  return normalized;
+}
+
+function setAuthMessage(message,isError=false){
+  authMessageEl.textContent=message||"";
+  authMessageEl.style.color=isError?"#be123c":"#6b7280";
+}
+
+function setSync(message){
+  syncStatusEl.textContent=message;
+}
+
+function showAuth(){
+  currentUser=null;
+  appShellEl.style.display="none";
+  authScreenEl.style.display="flex";
+  loginPasswordEl.value="";
+  setAuthMessage("");
+}
+
+function showApp(){
+  authScreenEl.style.display="none";
+  appShellEl.style.display="block";
+  userEmailEl.textContent=currentUser?.email||"";
+  drawSubjects();
+  drawCalendar();
+}
+
+async function login(event){
+  event.preventDefault();
+  const email=loginEmailEl.value.trim();
+  const password=loginPasswordEl.value;
+  if(!email||!password)return;
+
+  loginButtonEl.disabled=true;
+  loginButtonEl.textContent="Ingresando...";
+  setAuthMessage("Verificando cuenta...");
+
+  const {data:authData,error}=await db.auth.signInWithPassword({email,password});
+
+  loginButtonEl.disabled=false;
+  loginButtonEl.textContent="Iniciar sesión";
+
+  if(error){
+    setAuthMessage("Correo o contraseña incorrectos.",true);
+    return;
+  }
+
+  await loadUserData(authData.user);
+}
+
+async function logout(){
+  await db.auth.signOut();
+  showAuth();
+}
+
+async function loadUserData(user){
+  currentUser=user;
+  setAuthMessage("Cargando tus datos...");
+
+  const {data:row,error}=await db
+    .from("app_data")
+    .select("data")
+    .eq("user_id",user.id)
+    .maybeSingle();
+
+  if(error){
+    console.error(error);
+    setAuthMessage("No se pudieron cargar tus datos. Revisá la conexión.",true);
+    showAuth();
+    return;
+  }
+
+  if(row?.data){
+    data=normalizeData(row.data);
+  }else{
+    let localData=null;
+    try{
+      const saved=localStorage.getItem(KEY);
+      if(saved)localData=JSON.parse(saved);
+    }catch(e){
+      console.warn("No se pudo leer el respaldo local",e);
+    }
+
+    data=normalizeData(localData||{"subjects":[]});
+
+    const {error:insertError}=await db
+      .from("app_data")
+      .insert({user_id:user.id,data});
+
+    if(insertError){
+      console.error(insertError);
+      setAuthMessage("No se pudo crear tu espacio de datos.",true);
+      showAuth();
+      return;
+    }
+  }
+
+  localStorage.setItem(KEY,JSON.stringify(data));
+  setSync("☁️ Datos sincronizados");
+  showApp();
+}
+
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(data));
+
+  if(!currentUser){
+    return Promise.resolve();
+  }
+
+  const snapshot=JSON.parse(JSON.stringify(data));
+  setSync("☁️ Guardando...");
+
+  saveQueue=saveQueue.then(async()=>{
+    const {error}=await db
+      .from("app_data")
+      .upsert({
+        user_id:currentUser.id,
+        data:snapshot,
+        updated_at:new Date().toISOString()
+      },{onConflict:"user_id"});
+
+    if(error){
+      console.error(error);
+      setSync("⚠️ No se pudo sincronizar");
+    }else{
+      setSync("☁️ Guardado en la nube");
+    }
+  });
+
+  return saveQueue;
+}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function esc(x){return String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
 function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
@@ -162,7 +348,7 @@ function saveGrade(){let s=data.subjects.find(x=>x.id===current),n=gnameEl.value
 function delGrade(i){let s=data.subjects.find(x=>x.id===current);if(confirm("¿Eliminar evaluación?")){s.evaluations.splice(i,1);save();detailTab("grades")}}
 
 function newEvent(){if(!data.subjects.length)return alert("Primero agregá una materia.");ematterEl.innerHTML=data.subjects.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");enameEl.value="";edateEl.value=iso(cal);etypeEl.value="exam";alsoGradeEl.checked=true;eventModalEl.classList.add("show");eventModalEl.style.zIndex="20"}
-function saveEvent(){let sid=ematter.value,n=enameEl.value.trim(),d=edateEl.value,t=etypeEl.value;if(!n||!d)return alert("Completá nombre y fecha.");let s=data.subjects.find(x=>x.id===sid),e={id:uid(),name:n,date:d,type:t};s.events.push(e);if(alsoGradeEl.checked&&t==="exam")s.evaluations.push({id:e.id,name:n,date:d,max:100,score:null,weight:null});save();closeAll();drawCalendar();drawSubjects()}
+function saveEvent(){let sid=ematterEl.value,n=enameEl.value.trim(),d=edateEl.value,t=etypeEl.value;if(!n||!d)return alert("Completá nombre y fecha.");let s=data.subjects.find(x=>x.id===sid),e={id:uid(),name:n,date:d,type:t};s.events.push(e);if(alsoGradeEl.checked&&t==="exam")s.evaluations.push({id:e.id,name:n,date:d,max:100,score:null,weight:null});save();closeAll();drawCalendar();drawSubjects()}
 function moveMonth(n){cal=new Date(cal.getFullYear(),cal.getMonth()+n,1);drawCalendar()}function today(){cal=new Date();drawCalendar()}
 function drawCalendar(){let y=cal.getFullYear(),m=cal.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0),start=(first.getDay()+6)%7,total=Math.ceil((start+last.getDate())/7)*7,names=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];let h=`<div class="calendar"><div class="calendarHead"><h3>${cal.toLocaleDateString("es-ES",{month:"long",year:"numeric"})}</h3></div><div class="calgrid">${names.map(x=>`<div class="dow">${x}</div>`).join("")}`;for(let i=0;i<total;i++){let day=i-start+1;if(day<1||day>last.getDate()){h+="<div class='day' style='background:#f8fafc'></div>";continue}let d=new Date(y,m,day),id=iso(d),ev=[];data.subjects.forEach(s=>(s.events||[]).forEach(e=>{if(e.date===id)ev.push({...e,subject:s.name})}));h+=`<div class="day ${id===iso(new Date())?"today":""}" onclick="calendarDay('${id}')"><b>${day}</b>${ev.map(e=>`<div class="event ${e.type}" title="${esc(e.name)}">${e.type==="exam"?"🧪":e.type==="activity"?"📝":e.type==="practice"?"🏥":"📌"} ${esc(e.name)}</div>`).join("")}</div>`}calendarEl.innerHTML=h+"</div></div>"}
 function calendarDay(d){let ev=[];data.subjects.forEach(s=>(s.events||[]).forEach(e=>{if(e.date===d)ev.push({...e,subject:s.name,subjectId:s.id})}));if(!ev.length){newEvent();edateEl.value=d;return}detailTitleEl.textContent="📅 "+fmt(d);attTabEl.style.display="none";gradeTabEl.style.display="none";let h="";ev.forEach(e=>h+=`<div class="item"><b>${e.type==="exam"?"🧪 Examen":e.type==="activity"?"📝 Actividad":e.type==="practice"?"🏥 Práctica":"📌 Otro"} — ${esc(e.name)}</b><br>${esc(e.subject)}<div class="actions"><button class="danger" onclick="removeEvent('${e.subjectId||""}','${e.id}')">Eliminar</button></div></div>`);detailEl.innerHTML=h;detailModalEl.classList.add("show")}
@@ -178,6 +364,25 @@ function removeEvent(sid,id){
  drawSubjects();
 }
 function drawSubjects(){if(!data.subjects.length){subjectsEl.innerHTML=`<div class="card"><h3>Todavía no hay materias</h3><button class="primary" onclick="newSubject()">＋ Agregar materia</button></div>`;return}subjectsEl.innerHTML='<div class="grid">'+data.subjects.map(s=>{let a=astats(s),z=gradeInfo(s);return `<div class="card"><h3>${esc(s.name)}</h3><div class="muted">Mínimo: ${s.minAttendance}%</div><div class="stat ${a.pct>=s.minAttendance?"good":"bad"}">${a.total?a.pct.toFixed(1)+"%":"—"}</div><div>📝 ${s.evaluations.length} evaluación(es) · ⚖️ ${z.weight.toFixed(1)}% de peso conocido</div><div class="actions"><button class="primary" onclick="openDetails('${s.id}','att')">📅 Asistencia</button><button class="secondary" onclick="openDetails('${s.id}','grades')">📝 Evaluaciones</button><button class="danger" onclick="deleteSubject('${s.id}')">🗑️ Eliminar materia</button></div></div>`}).join("")}
-drawSubjects();drawCalendar();
+async function bootstrap(){
+  const {data:{session},error}=await db.auth.getSession();
+  if(error){
+    console.error(error);
+    showAuth();
+    return;
+  }
+
+  if(session?.user){
+    await loadUserData(session.user);
+  }else{
+    showAuth();
+  }
+}
+
+db.auth.onAuthStateChange((event)=>{
+  if(event==="SIGNED_OUT")showAuth();
+});
+
+bootstrap();
 </script>
 </body></html>
