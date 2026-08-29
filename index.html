@@ -304,6 +304,112 @@ function deleteSubject(id){
  drawSubjects();
  drawCalendar();
 }
+function astats(s){
+  let units=0;
+  let total=0;
+
+  for(let a of s.attendance){
+    if(a.type==="present"){
+      units+=1;
+      total+=1;
+    }else if(a.type==="double"){
+      units+=2;
+      total+=2;
+    }else if(a.type==="half"){
+      units+=0.5;
+      total+=1;
+    }else if(a.type==="absent" || a.type==="justified"){
+      total+=1;
+    }
+  }
+
+  return{
+    total,
+    units,
+    pct:total ? (units/total*100) : 0
+  };
+}
+function newAttendance(id){current=id;let s=data.subjects.find(x=>x.id===id);if(!s)return alert("No se encontró la materia.");attSubjectEl.innerHTML="<b>"+esc(s.name)+"</b>";attDateEl.value=iso(new Date());attTypeEl.value="present";attendanceModalEl.classList.add("show");attendanceModalEl.style.zIndex="20"}
+function saveAttendance(){let d=attDateEl.value,t=attTypeEl.value;if(!current)return alert("Primero elegí una materia.");if(!d)return alert("Elegí una fecha.");let s=data.subjects.find(x=>x.id===current),e=s.attendance.find(x=>x.date===d);if(e&&e.type==="present"&&t==="present")e.type="double";else if(e)return alert("Esa fecha ya tiene un registro.");else s.attendance.push({date:d,type:t});save();closeAll();drawSubjects()}
+
+function openDetails(id,tab="att"){current=id;detailTitleEl.textContent=data.subjects.find(x=>x.id===id).name;detailModalEl.classList.add("show");detailTab(tab)}
+function detailTab(tab){let s=data.subjects.find(x=>x.id===current);attTabEl.className=tab==="att"?"primary":"secondary";gradeTabEl.className=tab==="grades"?"primary":"secondary";detailEl.innerHTML=tab==="att"?attendanceView(s):gradeView(s)}
+function attendanceView(s){
+ let a=astats(s);
+ let h=`<div class="stat ${a.pct>=s.minAttendance?"good":"bad"}">${a.pct.toFixed(1)}%</div>
+ <p>Mínimo: <b>${s.minAttendance}%</b></p>
+ <div class="notice">Clases computadas: <b>${a.total}</b> · Asistencias efectivas: <b>${a.units}</b></div>
+ <button class="primary" onclick="newAttendance('${s.id}')">＋ Registrar día</button>
+ <h3>Historial</h3>`;
+ if(!s.attendance.length) h+=`<p class="muted">Todavía no hay registros.</p>`;
+ s.attendance.slice().sort((x,y)=>y.date.localeCompare(x.date)).forEach((x,i)=>{
+   h+=`<div class="item">
+     <b>${fmt(x.date)}</b><br>
+     ${x.type==="double"?"⭐ Doble asistencia":x.type==="present"?"✅ Asistencia":x.type==="half"?"🌓 Media asistencia":x.type==="absent"?"❌ Ausencia":"🟡 Ausencia justificada"}
+     <div class="actions">
+       <button class="danger" onclick="deleteAttendance('${s.id}','${x.date}')">🗑️ Eliminar</button>
+     </div>
+   </div>`;
+ });
+ return h;
+}
+function deleteAttendance(subjectId,date){
+ const s=data.subjects.find(x=>x.id===subjectId);
+ if(!s)return;
+ const registro=s.attendance.find(x=>x.date===date);
+ if(!registro)return;
+ if(!confirm("¿Eliminar el registro de asistencia del "+fmt(date)+"?"))return;
+ s.attendance=s.attendance.filter(x=>x.date!==date);
+ save();
+ detailTab("att");
+ drawSubjects();
+}
+function gradeInfo(s){let weight=0,earned=0;for(let g of s.evaluations){if(g.weight!=null)weight+=Number(g.weight);if(g.weight!=null&&g.score!=null&&g.max>0)earned+=Number(g.score)/Number(g.max)*Number(g.weight)}return{weight,earned,pending:Math.max(0,100-weight)}}
+function gradeView(s){let z=gradeInfo(s),h=`<div class="notice"><b>Peso conocido:</b> ${z.weight.toFixed(1)}%<br><b>Peso pendiente:</b> ${z.pending.toFixed(1)}%<br><b>Nota acumulada aportada:</b> ${z.earned.toFixed(1)}/100</div><button class="primary" onclick="newGrade()">＋ Agregar evaluación</button>`;if(!s.evaluations.length)h+="<p class='muted'>Todavía no hay evaluaciones.</p>";s.evaluations.forEach((g,i)=>{let pct=g.score!=null?g.score/g.max*100:null;h+=`<div class="item"><b>${esc(g.name)}</b>${g.date?"<br>📅 "+fmt(g.date):""}<br>${g.score==null?"🕐 Nota pendiente":g.score+" / "+g.max+" ("+pct.toFixed(1)+"%)"}<br>⚖️ Peso: <span class="${g.weight==null?"pending":""}">${g.weight==null?"Pendiente":g.weight+"%"}</span><div class="actions"><button class="secondary" onclick="editGrade(${i})">Editar</button><button class="danger" onclick="delGrade(${i})">Eliminar</button></div></div>`});h+="<h3>🎯 Escala</h3><p>5 = 91–100 · 4 = 81–90 · 3 = 71–80 · 2 = 61–70 · 1 = 1–60</p>";return h}
+function newGrade(){editIndex=null;gnameEl.value="";gdateEl.value="";gmaxEl.value="";gscoreEl.value="";gweightEl.value="";gradeModalEl.classList.add("show");gradeModalEl.style.zIndex="20"}
+function editGrade(i){let g=data.subjects.find(x=>x.id===current).evaluations[i];editIndex=i;gnameEl.value=g.name;gdateEl.value=g.date||"";gmaxEl.value=g.max??"";gscoreEl.value=g.score??"";gweightEl.value=g.weight??"";gradeModalEl.classList.add("show");gradeModalEl.style.zIndex="20"}
+function saveGrade(){let s=data.subjects.find(x=>x.id===current),n=gnameEl.value.trim(),max=gmaxEl.value===""?100:Number(gmaxEl.value),score=gscoreEl.value===""?null:Number(gscoreEl.value),w=gweightEl.value===""?null:Number(gweightEl.value);if(!n)return alert("Escribí el nombre.");if(max<=0)return alert("El puntaje máximo debe ser mayor que 0.");if(score!=null&&(score<0||score>max))return alert("El puntaje no puede superar el máximo.");if(w!=null&&(w<0||w>100))return alert("El peso debe estar entre 0 y 100.");let g={id:uid(),name:n,date:gdateEl.value||null,max,score,weight:w};if(editIndex==null)s.evaluations.push(g);else{s.evaluations[editIndex].name=n;s.evaluations[editIndex].date=g.date;s.evaluations[editIndex].max=max;s.evaluations[editIndex].score=score;s.evaluations[editIndex].weight=w}save();closeGrade();detailTab("grades")}
+function delGrade(i){let s=data.subjects.find(x=>x.id===current);if(confirm("¿Eliminar evaluación?")){s.evaluations.splice(i,1);save();detailTab("grades")}}
+
+function newEvent(){if(!data.subjects.length)return alert("Primero agregá una materia.");ematterEl.innerHTML=data.subjects.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");enameEl.value="";edateEl.value=iso(cal);etypeEl.value="exam";alsoGradeEl.checked=true;eventModalEl.classList.add("show");eventModalEl.style.zIndex="20"}
+function saveEvent(){let sid=ematterEl.value,n=enameEl.value.trim(),d=edateEl.value,t=etypeEl.value;if(!n||!d)return alert("Completá nombre y fecha.");let s=data.subjects.find(x=>x.id===sid),e={id:uid(),name:n,date:d,type:t};s.events.push(e);if(alsoGradeEl.checked&&t==="exam")s.evaluations.push({id:e.id,name:n,date:d,max:100,score:null,weight:null});save();closeAll();drawCalendar();drawSubjects()}
+function moveMonth(n){cal=new Date(cal.getFullYear(),cal.getMonth()+n,1);drawCalendar()}function today(){cal=new Date();drawCalendar()}
+function drawCalendar(){let y=cal.getFullYear(),m=cal.getMonth(),first=new Date(y,m,1),last=new Date(y,m+1,0),start=(first.getDay()+6)%7,total=Math.ceil((start+last.getDate())/7)*7,names=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];let h=`<div class="calendar"><div class="calendarHead"><h3>${cal.toLocaleDateString("es-ES",{month:"long",year:"numeric"})}</h3></div><div class="calgrid">${names.map(x=>`<div class="dow">${x}</div>`).join("")}`;for(let i=0;i<total;i++){let day=i-start+1;if(day<1||day>last.getDate()){h+="<div class='day' style='background:#f8fafc'></div>";continue}let d=new Date(y,m,day),id=iso(d),ev=[];data.subjects.forEach(s=>(s.events||[]).forEach(e=>{if(e.date===id)ev.push({...e,subject:s.name})}));h+=`<div class="day ${id===iso(new Date())?"today":""}" onclick="calendarDay('${id}')"><b>${day}</b>${ev.map(e=>`<div class="event ${e.type}" title="${esc(e.name)}">${e.type==="exam"?"🧪":e.type==="activity"?"📝":e.type==="practice"?"🏥":"📌"} ${esc(e.name)}</div>`).join("")}</div>`}calendarEl.innerHTML=h+"</div></div>"}
+function calendarDay(d){let ev=[];data.subjects.forEach(s=>(s.events||[]).forEach(e=>{if(e.date===d)ev.push({...e,subject:s.name,subjectId:s.id})}));if(!ev.length){newEvent();edateEl.value=d;return}detailTitleEl.textContent="📅 "+fmt(d);attTabEl.style.display="none";gradeTabEl.style.display="none";let h="";ev.forEach(e=>h+=`<div class="item"><b>${e.type==="exam"?"🧪 Examen":e.type==="activity"?"📝 Actividad":e.type==="practice"?"🏥 Práctica":"📌 Otro"} — ${esc(e.name)}</b><br>${esc(e.subject)}<div class="actions"><button class="danger" onclick="removeEvent('${e.subjectId||""}','${e.id}')">Eliminar</button></div></div>`);detailEl.innerHTML=h;detailModalEl.classList.add("show")}
+function removeEvent(sid,id){
+ const s=data.subjects.find(x=>x.id===sid);
+ if(!s)return;
+ if(!confirm("¿Eliminar este evento del calendario?"))return;
+ s.events=s.events.filter(e=>e.id!==id);
+ s.evaluations=s.evaluations.filter(g=>g.id!==id);
+ save();
+ closeAll();
+ drawCalendar();
+ drawSubjects();
+}
+function drawSubjects(){if(!data.subjects.length){subjectsEl.innerHTML=`<div class="card"><h3>Todavía no hay materias</h3><button class="primary" onclick="newSubject()">＋ Agregar materia</button></div>`;return}subjectsEl.innerHTML='<div class="grid">'+data.subjects.map(s=>{let a=astats(s),z=gradeInfo(s);return `<div class="card"><h3>${esc(s.name)}</h3><div class="muted">Mínimo: ${s.minAttendance}%</div><div class="stat ${a.pct>=s.minAttendance?"good":"bad"}">${a.total?a.pct.toFixed(1)+"%":"—"}</div><div>📝 ${s.evaluations.length} evaluación(es) · ⚖️ ${z.weight.toFixed(1)}% de peso conocido</div><div class="actions"><button class="primary" onclick="openDetails('${s.id}','att')">📅 Asistencia</button><button class="secondary" onclick="openDetails('${s.id}','grades')">📝 Evaluaciones</button><button class="danger" onclick="deleteSubject('${s.id}')">🗑️ Eliminar materia</button></div></div>`}).join("")}
+async function bootstrap(){
+  const {data:{session},error}=await db.auth.getSession();
+  if(error){
+    console.error(error);
+    showAuth();
+    return;
+  }
+
+  if(session?.user){
+    await loadUserData(session.user);
+  }else{
+    showAuth();
+  }
+}
+
+db.auth.onAuthStateChange((event)=>{
+  if(event==="SIGNED_OUT")showAuth();
+});
+
+bootstrap();
+</script>
+</body></html>
 function astats(s){let units=0;for(let a of s.attendance){if(a.type==="present")units++;if(a.type==="double")units+=2;if(a.type==="half")units+=.5}let total=s.attendance.length;return{total,units,pct:total?Math.min(100,units/total*100):0}}
 function newAttendance(id){current=id;let s=data.subjects.find(x=>x.id===id);if(!s)return alert("No se encontró la materia.");attSubjectEl.innerHTML="<b>"+esc(s.name)+"</b>";attDateEl.value=iso(new Date());attTypeEl.value="present";attendanceModalEl.classList.add("show");attendanceModalEl.style.zIndex="20"}
 function saveAttendance(){let d=attDateEl.value,t=attTypeEl.value;if(!current)return alert("Primero elegí una materia.");if(!d)return alert("Elegí una fecha.");let s=data.subjects.find(x=>x.id===current),e=s.attendance.find(x=>x.date===d);if(e&&e.type==="present"&&t==="present")e.type="double";else if(e)return alert("Esa fecha ya tiene un registro.");else s.attendance.push({date:d,type:t});save();closeAll();drawSubjects()}
